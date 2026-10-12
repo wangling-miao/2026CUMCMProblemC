@@ -1,0 +1,212 @@
+"""Shared physical constants, paths, and v11 policy defaults."""
+
+from pathlib import Path
+
+REPO = Path(__file__).resolve().parents[4]
+DATA_DIR = REPO / "data" / "raw" / "data"
+TEMPLATE_DIR = DATA_DIR / "附件5"
+RESULT_DIR = REPO / "results" / "recomputed"
+
+T = 144
+DT_H = 1.0 / 6.0
+P_BESS = 5000.0
+Q_BESS_MAX = P_BESS * DT_H  # 5000/6 kWh per slot
+ETA_C = 0.9
+ETA_D = 0.9
+E_MIN = 1200.0
+E_MAX = 10800.0
+E0_JAN1 = 6000.0
+EMERGENCY_MULT = 5.0
+ADJUST_ABS_MULT = 0.5
+
+# End-of-window storage credit (yuan / kWh of SOC). Same as v1.
+TERMINAL_MU = 0.45
+# Nested LP tolerance on the full primary objective F = cash − ν E_H.
+EPS_LP = 1e-6
+
+N_DAYS = 365
+EXPORT_START = 31  # 2025-02-01, 0-based
+EXPORT_DAYS = N_DAYS - EXPORT_START  # 334
+
+SPECIFIED_DATES = (
+    "2025-03-20",
+    "2025-06-21",
+    "2025-09-23",
+    "2025-12-21",
+)
+
+# Regression targets from suggestion/v1/建模前数据核对记录.md
+Q1_COST = 35126.948589289634
+Q1_ENERGY = 59482.698998
+Q1_CHARGE = 20740.666130
+Q1_DISCHARGE = 16799.939566
+Q1_BASELINE = 48052.046591
+
+V1_COST_334 = {
+    "q2": 16434960.204014923,
+    "q3": 15953173.069180543,
+    "q4-2": 17342698.111619,
+    "q4-3": 16810132.106755,
+}
+
+# v2 334-day costs (result/v2/summary.json)
+V2_COST_334 = {
+    "q2": 13790848.68511704,
+    "q3": 13376283.86459893,
+    "q4-2": 14526595.91952836,
+    "q4-3": 14069978.540704,
+    "q3-A": 13650080.458153,
+    "q3-B": 13650080.458153,
+    "q3-D": 13688351.15,
+}
+
+V3_COST_334 = {
+    "q2": 15888506.313012,
+    "q3": 15118670.646785,
+    "q4-2": 16923298.965999,
+    "q4-3": 16020750.439253,
+    "q3-A": 15710956.764047,
+    "q3-B": 15514420.938773,
+    "q3-D": 15600736.050058,
+    "q3-E": 15125072.657409,
+}
+
+V4_COST_334 = {
+    "q2": 13816534.357354,
+    "q3": 14086504.247608,
+    "q4-2": 14912324.456259,
+    "q4-3": 15455410.249689,
+    "q3-A": 13681698.18,
+    "q3-B": 13678943.80,
+    "q3-D": 14262746.51,
+    "q3-E": 14092788.65,
+}
+
+SCREEN_PATHS = 14
+SCREEN_MIN_PATHS = 7
+SCREEN_EPS_C = 5.0  # mean Ĝ must exceed this
+SCREEN_R = 5.0  # optional min-path budget; official screening does not apply it
+SCREEN_WORST_CASE = False  # official: mean Ĝ > ε_C only
+SCREEN_EPS_E = 100.0  # v6 energy gate only; official v7 does not use it
+SCREEN_NEXT = 36  # next-day 00:00–06:00
+ADJUST_LAMBDAS = (0.0, 0.5, 1.0)
+LAMBDA_V2 = 2.0
+P_MAX_ATT1 = 1.3952
+KAPPA_Q3 = EMERGENCY_MULT * ETA_D * P_MAX_ATT1  # 6.2784 yuan / battery-kWh
+
+V10_COST_334 = {
+    "q2": 13790848.68511704,
+    "q3": 13370019.700635396,
+    "q4-2": 14526595.91952836,
+    "q4-3": 14078164.359743167,
+    "q2-B0": 14070110.410311636,
+    "q2-B2": 13806934.579596031,
+    "q4-2-B0": 14814189.142660042,
+    "q4-2-B2": 14543360.748306531,
+    "q3-B0": 13555211.960502136,
+    "q4-3-B0": 14281226.544518653,
+    "q3-3cand": 13383146.840730364,
+    "q4-3-3cand": 14092048.528475739,
+}
+
+PLAN_BUFFER_DAYS = 5
+PLAN_BUFFER_OBS = 28
+PLAN_BUFFER_MIN_DAYS = 8
+# Frozen delivery: Q2/Q4-2 use obs/28 (B1); Q3/Q4-3 use days/5 (B2).
+
+V9_COST_334 = {
+    "q2": 14070110.410311636,
+    "q3": 13555211.960502136,
+    "q4-2": 14814189.142660042,
+    "q4-3": 14281226.544518653,
+    "q3-ns": 13622804.49405318,
+    "q3-A": 13908167.48269293,
+    "q3-B": 13908167.48269293,
+    "q3-3cand": 13576927.68677317,
+    "q4-3-3cand": 14300682.848655025,
+    "q2-B0": 14070110.410311636,
+    "q4-2-B0": 14814189.142660042,
+}
+
+V8_COST_334 = {
+    "q2": 14070110.410311636,
+    "q3": 13555323.905286076,
+    "q4-2": 14814189.142660042,
+    "q4-3": 14280385.488709046,
+    "q3-ns": 13622804.49405318,
+    "q3-A": 13908167.48269293,
+    "q3-B": 13908167.48269293,
+    "q3-D": 13830152.302602995,
+    "q3-E": 13577694.000952384,
+    "q4-3-ns": 14354500.597246077,
+    "q3-3cand": 13576927.68677317,
+    "q4-3-3cand": 14300682.848655025,
+}
+
+V7_COST_334 = {
+    "q2": 13790848.685117,
+    "q3": 13435277.176694,
+    "q4-2": 14526595.919528,
+    "q4-3": 14140727.688874,
+    "q3-ns": 13680447.719318,
+    "q3-A": 13650080.458153,
+    "q3-B": 13650080.458153,
+    "q3-D": 13604773.829167,
+    "q3-E": 13436666.352208,
+    "q4-3-ns": 14491470.022796,
+    "q3-v7b": 13414455.794454,
+    "q4-3-v7b": 14121584.233558,
+}
+
+V6_COST_334 = {
+    "q2": 13790848.68511704,
+    "q3": 13501394.734938366,
+    "q4-2": 14526595.91952836,
+    "q4-3": 14199989.313474141,
+    "q3-ns": 13680447.719318,
+    "q3-A": 13650080.458153,
+    "q3-B": 13650080.458153,
+    "q3-D": 13636673.06,
+    "q3-E": 13517965.13,
+    "q4-3-ns": 14491470.02,
+}
+
+V5_COST_334 = {
+    "q2": 13790848.685117,
+    "q3": 13508535.915381,
+    "q4-2": 14526595.919528,
+    "q4-3": 14212595.478471,
+    "q3-ns": 13680447.719318,
+    "q3-A": 13650080.458153,
+    "q3-B": 13650080.458153,
+    "q3-D": 13637396.071012,
+    "q3-E": 13518946.977528,
+}
+
+GAMMA_CANDIDATES = (0.0, 0.25, 0.5, 1.0)
+CLIP_NONE = 0
+CLIP_FLOAT = 1
+CLIP_PHYSICS = 2
+CLIP_GAMMA = 3
+CLIP_GREEDY = 4
+
+# v2 policy
+ALPHA_Q2 = 0.80
+ALPHA_Q3_LOCK = 0.80
+ALPHA_Q3_FLEX = 0.70
+BAND_LO = 0.70
+BAND_HI = 0.90
+ERR_WINDOW = 28
+PLAN_HORIZON = 288
+EXEC_HORIZON = 144
+SOC_DEV = 400.0
+MIN_ADJUST_SAVE = 5.0
+MIN_ADJUST_KWH = 20.0
+BLEND_DECAY = 0.90
+MIN_ERR_SAMPLES = 8
+DEFAULT_FUSION_W = 0.6
+PV_NIGHT_KW = 10.0
+NIGHT_HOURS = frozenset(list(range(0, 6)) + list(range(19, 24)))
+HOUR_TO_SLOT = {0: 0, 6: 36, 12: 72, 18: 108}
+SLOT_TO_ISSUE = {0: 0, 36: 1, 72: 2, 108: 3}
+ISSUE_HOURS = (0, 6, 12, 18)

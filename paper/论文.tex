@@ -1,0 +1,58 @@
+\PassOptionsToPackage{quiet}{xeCJK}
+\documentclass[withoutpreface,bwprint]{format}
+\usepackage{placeins}
+\usepackage{needspace}
+
+
+
+
+
+
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% 正文
+\begin{document}
+
+% 将每张长表作为一个整体排版，避免表格跨页拆分。
+\setcounter{LTchunksize}{10000}
+
+%  报名信息表（封面标题上方）
+%   下列 tihao / baominghao / group 等赋值宏由软件「队伍信息」自动填充（injectTeamInfo），
+%   表格单元格用 mcm@tokens@ 取值显示，无需手改。
+%   tihao = 题号；group = 组别（封面「所属类别」单元格用）
+\tihao{}
+\baominghao{}
+\group{}
+\schoolname{}
+\membera{}
+\memberb{}
+\memberc{}
+\supervisor{}
+
+
+
+
+% 标题
+{\centering\zihao{3}\bfseries 基于滚动时域优化与情景分析的微网购电储能模型\par}
+
+\setcounter{page}{1}
+
+\thispagestyle{plain}
+
+\input{0.摘要.tex}
+% 正文采用略宽行距，改善连续段落的可读性。
+\renewcommand{\baselinestretch}{1.15}\normalsize
+\input{3.模型假设.tex}
+\input{4.符号说明.tex}
+\input{5.模型的建立与求解.tex}
+\input{6.模型检验.tex}
+\input{7.模型评价.tex}
+% 参考文献沿用正文行距。
+{\renewcommand{\baselinestretch}{1.15}\normalsize
+\input{10.参考文献.tex}}
+\renewcommand{\baselinestretch}{1.22}\normalsize
+\end{document}

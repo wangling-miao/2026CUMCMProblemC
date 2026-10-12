@@ -1,0 +1,121 @@
+\subsubsection{问题二模型}
+
+问题二需要在实际出力未知时提交日前合同，并在出力揭示后补足缺口。本节依次说明信息集、预报、目标函数、约束和实时执行规则。
+
+本问的前置参数包括日前保护分位数$\alpha=0.8$、日前展望窗口$H=288$个10分钟时段、末端储电价值系数$\nu=0.45$元/kWh及紧急购电价格倍数5；储能容量、功率上限和充放电效率沿用问题一设置。
+
+
+我们设第$d$天的0:00为决策时刻，此时调度中心可获取的信息集为
+\begin{equation}\label{eq:src16}
+    \mathcal{F}_{0}^{(d)}=\left\{\left(L_{t}^{(k)},V_{t}^{(k)}\right)_{k<d},\ E_0^{(d)},\ p_t,\ \mathcal B\right\}
+\end{equation}
+当日0:00之后的实际出力不属于$\mathcal{F}_0^{(d)}$，日前决策只能使用式\eqref{eq:src16}中的历史信息。
+
+对任意时段$t\in\mathcal{T}$，我们定义计划与执行所用变量如下；其中只有日前计划受$\mathcal{F}_0^{(d)}$约束，紧急购电量在实际执行时确定：
+\begin{equation}\label{eq:src17}
+    q_{t},\ h_{t},\ c_{t},\ d_{t},\ w_{t}\ \ge 0
+\end{equation}
+$q_t$在计划阶段一次性确定，$h_t$在执行阶段因供给不足产生，结算单价相差5倍，因此计划阶段设置保护量以减少高价紧急购电。
+
+
+第$d$天的负载与光伏日前预报由“同时段基准＋偏差校正”给出：
+\begin{equation}\label{eq:src18}
+    \hat{L}_{t}^{(d)}=\max\{0,L_t^{(d-7)}+b_t^L\},\qquad\hat{V}_{t}^{(d)}=\max\{0,B_t^{V,(d)}+b_t^V\}
+\end{equation}
+其中，$b_t^L$为已有逐槽周同比负载偏差的中位数，$b_t^V$为实际光伏减历史原始预测的逐槽误差中位数；$B_t^{V,(d)}$由式\eqref{eq:src14}给出。历史不足时回退附件1的对应基线。为避免对负载与光伏分别叠加保守量，我们直接对净负荷误差作单侧保护：
+\begin{equation}\label{eq:src19}
+ \check N_t^{(d)}=\hat L_t^{(d)}-\hat V_t^{(d)}+B_{d,h(t)},\qquad B_{d,h(t)}\ge0.
+\end{equation}
+该预测输入允许为负，以保留富余光伏的充电价值。保护量按历史误差分位数确定，超出计划与储能供给的实现需求由紧急购电补足。
+
+\subsubsection{目标函数}
+
+本问将计划阶段与执行阶段分开处理。日前计划只决定合同购电量及储能安排，执行阶段若实际出力不足，再按交易时刻电价的5倍补购紧急电量。因此计划阶段以48小时展望购电费用扣除末端储电价值为目标：
+\begin{equation}\label{eq:src21}
+    \min\ F_{\mathrm{plan}}=\sum_{i=0}^{H-1}\hat p_iq_i-\nu E_H,\qquad H=288,\quad\nu=0.45
+\end{equation}
+末端项只用于规划，不计入实际账单。保守需求$\check{N}_t^{(d)}$通过约束计划购电量和储能安排吸收预测偏差，紧急购电量$h_t$不作为日前决策变量。实际执行后产生的紧急购电费用单独按$5p_t h_t$结算：
+\begin{equation}\label{eq:src22}
+    F_{\mathrm{settle}}=\sum_{t\in\mathcal{T}} p_{t}\,a_{t}+\sum_{t\in\mathcal{T}}5\,p_{t}\,h_{t}
+\end{equation}
+保护分位数改变日前合同的覆盖量，紧急购电只在实际执行后计入账单。
+
+\subsubsection{约束条件}
+
+执行阶段的任一时刻，供给不得低于负载需求，差额以紧急购电补足：
+\begin{equation}\label{eq:src23}
+    a_{t}+h_{t}+V_{t}+d_{t}=L_{t}+c_{t}+w_{t},\qquad \forall t\in\mathcal{T}
+\end{equation}
+计划购电量$q_t$在当天全部固定执行，实际非紧急购电量为：
+\begin{equation}\label{eq:src24}
+    a_t=q_t,\qquad \forall t\in\mathcal T
+\end{equation}
+该等式刻画计划购电合同的刚性：无论实际出力如何波动，提交的$q_t$均须付费；用不完的部分可以充电或计为未消纳。$\alpha=0.8$只影响日前保护分位数，不改变执行比例。
+
+$\alpha=0.8$并非仅由经验给定。忽略跨时储能回收价值，对单个时段作边际近似：计划多购1 kWh而未使用时的过量成本约为$C_o=p_t$；若少计划1 kWh而最终需紧急购电，则相对于正常计划购电增加的短缺成本为$C_u=5p_t-p_t=4p_t$。按报童模型的临界分位思想，有
+\begin{equation}\label{eq:q2_quantile}
+\alpha^*=\frac{C_u}{C_u+C_o}=\frac{4p_t}{4p_t+p_t}=0.8.
+\end{equation}
+据此，我们将日前保护分位数取为0.8，跨时段的能量转移由储能递推式处理。
+
+
+储能设备的储电量递推、上下限与功率上限约束与问题一保持一致，分别如式\eqref{eq:src25}至式\eqref{eq:src27}所示：
+\begin{align}
+    E_{t+1}&=E_{t}+\eta_{c}\,c_{t}-\frac{d_{t}}{\eta_{d}},\qquad \forall t\in\mathcal{T}\label{eq:src25}\\
+    E_{\min}&\le E_{t}\le E_{\max},\qquad t=0,1,\ldots,144\label{eq:src26}\\
+    0&\le c_{t}\le \bar{Q},\qquad 0\le d_{t}\le \bar{Q},\qquad \forall t\in\mathcal{T}
+\label{eq:src27}\end{align}
+各参数取值与问题一相同；在$H$槽日前规划窗口中，状态上下界施加于$i=0,1,\ldots,H$，包含窗口末端状态。本问不施加首末储电量相等约束：逐日负载与光伏存在季节性差异，强制每日回到同一储电量会割裂相邻日期之间的能量转移；因此只约束储电量在允许区间内运行，年末储电量由全年运行形成。
+
+
+计划仅决定$q_t$，充放电量$c_t,d_t$需在执行阶段逐时段修正。我们设第$t$时段的已知储电量为$E_t$，并按如下贪心规则给出该时段的充放电量与紧急购电量：
+\begin{equation}\label{eq:src28}
+ \begin{gathered}
+ D_t=\min\{\bar Q,\eta_d(E_t-E_{\min}),-s_t\}\quad(s_t<0),\\
+ (c_t,d_t,h_t)=
+ \begin{cases}
+ (\min\{\bar Q,(E_{\max}-E_t)/\eta_c,s_t\},0,0),&s_t\ge0,\\[1mm]
+ (0,D_t,-s_t-D_t),&s_t<0.
+ \end{cases}
+ \end{gathered}
+\end{equation}
+其中，$s_t=q_t+V_t-L_t$为计划购电量与实际光伏之和相对负载的富余量（kWh）。当$s_t\ge0$时，富余电量优先充入储能；当$s_t<0$时，先用储能放电补足，受功率或可用储电量限制后的剩余缺口按交易时刻电价的5倍紧急购电。每个时段只执行充电或放电，超出容量或功率限制的缺口计入$h_t$。
+
+
+\textbf{我们建立以下含紧急购电惩罚的滚动计划模型：}
+\begin{equation}\label{eq:src29}
+    \begin{aligned}
+    \min\quad &F_{\mathrm{plan}}=\sum_{i=0}^{H-1}\hat p_iq_i-\nu E_H\\
+    \mathrm{s.t.}\quad &q_i+d_i-c_i-w_i=\check N_i,\quad i=0,\ldots,H-1,\\
+    &a_t+h_t+V_t+d_t=L_t+c_t+w_t,\quad a_t=q_t,\quad t\in\mathcal T,\\
+    &E_{t+1}=E_t+\eta_c c_t-d_t/\eta_d,\quad E_{\min}\le E_t\le E_{\max},\\
+    &0\le c_t,d_t\le\bar Q,\quad q_t,h_t,w_t\ge0,\quad E_0\ \text{given}.
+    \end{aligned}
+\end{equation}
+其中，$\nu=0.45$，日前平衡使用预测输入$\check N_i$；紧急购电不进入日前计划，实际执行时按缺口确定。HiGHS先求日前计划，执行阶段按实时规则逐槽更新；预测条件下的规划结果与实际费用分别评价\cite{birge2011stochastic}。
+
+日前窗口取288个10分钟时段，即最多覆盖当天与次日各144个时段。窗口中的负载、光伏和电价分别由截至决策日可获得的历史数据、日前预测与价格预测接口拼接；线性规划只提交当天前144个时段的购电合同；实际储能另按实时规则执行，次日部分用于提供跨日状态和终端价值的前瞻信息。窗口末储电量由终端价值系数引导，不固定为预设终值；日末实际储电量作为次日初始状态，次日窗口数据不在当日重复结算。我们运行至最后一天时将窗口截断为当天数据。算法参数设置如表\ref{tab:参数2}所示。
+
+\Needspace{0.40\textheight}
+\begin{longtable}{>{\centering\arraybackslash}p{0.1759\textwidth}>{\raggedright\arraybackslash}p{0.2932\textwidth}>{\centering\arraybackslash}p{0.1173\textwidth}>{\raggedright\arraybackslash}p{0.2736\textwidth}}
+  \caption{问题二算法参数设置}
+  \label{tab:参数2} \\
+  \toprule
+  参数名 & 参数含义 & 取值 & 选取依据 \\
+  \midrule
+  \endfirsthead
+  \caption{问题二算法参数设置（续）} \\
+  \toprule
+  参数名 & 参数含义 & 取值 & 选取依据 \\
+  \midrule
+  \endhead
+  \bottomrule
+  \endfoot
+   $\alpha$ & 日前净负荷误差保护分位数 & 0.80 & 五倍紧急电价的临界分位基准 \\
+  $W_{\mathrm{obs}}$ & 同小时保护观测数 & 28 & 从28日档案取最近观测 \\
+  $B$ & 同时段基准回溯天数 & 7 & 一周周期 + 线性衰减权重 \\
+  $H$ & 日前展望槽数 & 288 & 当天加次日，年末截断 \\
+  $\nu$ & 末端储电价值（元/kWh） & 0.45 & 窗口外价值近似 \\
+  $5$ & 紧急购电价格倍数 & 5.0 & 题目给定 \\
+  $\varepsilon$ & 约束容差（kWh） & $2\times10^{-3}$ & 浮点求解精度 \\
+\end{longtable}

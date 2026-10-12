@@ -1,0 +1,88 @@
+\section{问题一的分析、建模和求解}
+
+\subsection{问题一的分析}
+
+问题一的主要矛盾是，在电价、负载和光伏预测均已知的条件下，协调储能充放电与外网购电时序，以降低典型日购电费用。由于输入信息完全确定，本问可作为后续不确定性调度模型的基准。
+
+\subsection{问题一的建模}
+
+\subsubsection{数据预处理}
+
+附件1以10分钟为采样间隔。令$\Delta t=1/6$ h，将负载与光伏功率统一折算为时段电量
+\begin{equation}\label{eq:src1}
+L_t=P_{\mathrm{load},t}\Delta t,\qquad V_t=P_{\mathrm{pv},t}\Delta t,\qquad t=0,1,\ldots,143 .
+\end{equation}
+原始00:10记录对应自然日00:00--00:10，24:00记录对应23:50--24:00；正文按自然日区间报告，结果模板保留附件5的原有行标签，二者的对应关系见支撑材料时间映射表。
+
+\subsubsection{目标函数}
+
+设$a_t,c_t,d_t,w_t$分别为第$t$时段外网购电量、储能充电量、储能放电量和未消纳电量（kWh），$E_t$为储电量。前置参数为$T=144$、$\Delta t=1/6$ h、$E_0=E_{144}=6000$ kWh、$E_{\min}=1200$ kWh、$E_{\max}=10800$ kWh、$P_{\max}=5000$ kW及$\eta_c=\eta_d=0.9$。以全天购电费最小为目标。
+
+\textbf{我们建立以下典型日确定性购电模型：}
+\begin{align}
+\min\quad &F=\sum_{t=0}^{143}p_ta_t,\label{eq:src5}
+\end{align}
+
+\subsubsection{约束条件}
+\begin{align}
+\mathrm{s.t.}\quad
+&a_t+V_t+d_t=L_t+c_t+w_t,\label{eq:src6}\\
+&
+ E_{t+1}=E_t+\eta_c c_t-\frac{d_t}{\eta_d},\label{eq:src7}\\
+&
+ E_{\min}\le E_t\le E_{\max},\label{eq:src8}\\
+&
+ 0\le c_t,d_t\le \bar Q=P_{\max}\Delta t=\frac{5000}{6},\label{eq:src9}\\
+&
+ E_0=E_{144}=6000,\qquad a_t,c_t,d_t,w_t\ge0.\label{eq:src10}
+\end{align}
+其中$E_{\min}=1200$ kWh，$E_{\max}=10800$ kWh，本文将题目中的“充放电效率90\%”解释为充电、放电两个环节效率均为$\eta_c=\eta_d=0.9$。
+
+\subsection{求解结果}
+
+由上述目标函数与约束条件构成完整模型，采用SciPy/HiGHS求解\cite{highs2018}。
+
+求得题目指定时段及全天购电结果如表\ref{tab:q1_buy}所示。
+\begin{longtable}{>{\centering\arraybackslash}p{0.1400\textwidth}>{\centering\arraybackslash}p{0.1200\textwidth}>{\centering\arraybackslash}p{0.1400\textwidth}>{\centering\arraybackslash}p{0.1200\textwidth}>{\centering\arraybackslash}p{0.1400\textwidth}>{\centering\arraybackslash}p{0.1200\textwidth}}
+  \caption{微网在指定时间段的购电量及全天结果}
+  \label{tab:q1_buy}\\
+  \toprule
+  时间段 & 购电量/kWh & 时间段 & 购电量/kWh & 时间段 & 购电量/kWh\\
+  \midrule
+  \endfirsthead
+  \caption{微网在指定时间段的购电量及全天结果（续）}\\
+  \toprule
+  时间段 & 购电量/kWh & 时间段 & 购电量/kWh & 时间段 & 购电量/kWh\\
+  \midrule
+  \endhead
+  \bottomrule
+  \endfoot
+  10:00--10:10 & 0.00 & 12:00--12:10 & 480.41 & 14:00--14:10 & 0.00\\
+  16:00--16:10 & 445.43 & 18:00--18:10 & 531.89 & 20:00--20:10 & 0.00\\
+  \multicolumn{2}{c}{全天购电量} & \multicolumn{1}{c}{59482.70 kWh} &
+  \multicolumn{2}{c}{全天购电费/元} & 35126.95\\
+\end{longtable}
+
+储能设备在题目指定时间段的结果见表\ref{tab:q1_bess}。
+\Needspace{0.25\textheight}
+\begin{longtable}{>{\centering\arraybackslash}p{0.1400\textwidth}>{\centering\arraybackslash}p{0.1200\textwidth}>{\centering\arraybackslash}p{0.1200\textwidth}>{\centering\arraybackslash}p{0.1400\textwidth}>{\centering\arraybackslash}p{0.1200\textwidth}>{\centering\arraybackslash}p{0.1200\textwidth}}
+  \caption{储能设备在指定时间段的充放电量及储电量（kWh）}
+  \label{tab:q1_bess}\\
+  \toprule
+  时间段 & 充电量 & 放电量 & 时间段 & 充电量 & 放电量\\
+  \midrule
+  \endfirsthead
+  \caption{储能设备在指定时间段的充放电量及储电量（续）}\\
+  \toprule
+  时间段 & 充电量 & 放电量 & 时间段 & 充电量 & 放电量\\
+  \midrule
+  \endhead
+  \bottomrule
+  \endfoot
+  0:00--4:00 & 4500.00 & 0.00 & 4:00--8:00 & 833.33 & 6365.84\\
+  8:00--12:00 & 4787.96 & 1703.00 & 12:00--16:00 & 5286.04 & 91.10\\
+  16:00--20:00 & 0.00 & 5780.13 & 20:00--24:00 & 5333.33 & 2859.87\\
+  0:00储电量 & 6000.00 & --- & 24:00储电量 & 6000.00 & ---\\
+\end{longtable}
+
+\textbf{无储能时按正净负荷直接购电的费用为48052.05元；采用储能优化后购电费下降至35126.95元，降幅为26.90\%。}求解所得储电量始终位于$[1200,10800]$ kWh内，线性等式约束最大残差为$4.55\times10^{-13}$ kWh，满足题目约束。

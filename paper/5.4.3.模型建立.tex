@@ -1,0 +1,115 @@
+\subsubsection{问题四模型}
+
+本问前置参数包括价格误差样本窗口$W=28$天、情景数$|\mathcal P|=7$--$14$、日前保护分位数$\alpha=0.8/0.7$、价格下界$10^{-4}$元/kWh及紧急购电价格倍数5。
+
+
+设第$d$天第$s$次决策的信息集为$\mathcal{F}_s^{(d)}$，则在问题四中该信息集除包含式\eqref{eq:src34}的各项外，还须包含截至当前时刻的价格观测与预测：
+\begin{equation}\label{eq:src50}
+    \mathcal{F}_{s}^{(d)}=\left\{\left(L_{t}^{(d)},V_{t}^{(d)}\right)_{t<t_{s}},\ \left(Y_{t}^{(s')}\right)_{s'\le s},\ \left(p_{t}^{(d')}\right)_{d'<d},\ \left(p_t^{(d)}\right)_{t<t_s},\ \hat{p}_{s,t}^{(d)},\ \left(L_{t}^{(k)},V_{t}^{(k)}\right)_{k<d}\right\}
+\end{equation}
+其中，$\left(p_t^{(d')}\right)_{d'<d}$为历史实时价格观测，$\hat{p}_t^{(d)}$为由式\eqref{eq:src49}给出的预测价格。与问题三相比，电价由已知输入变为当前预测值，决策还使用截至当时已实现的价格与当前储电状态；购电与储能安排随可用价格信息更新。
+
+\subsubsection{目标函数}
+
+为刻画预测价格与真实价格的偏离，我们定义价格预测误差：
+\begin{equation}\label{eq:src51}
+    \left\{\begin{aligned}
+    \zeta_{t}^{(d)}&=\ln p_{t}^{(d)}-\ln\hat{p}_{t}^{(d)},\\[1mm]
+    \mathbb{E}\left[\zeta_{t}^{(d)}\right]&=b_{t},\\[1mm]
+    \mathrm{Var}\left[\zeta_{t}^{(d)}\right]&=s_{t}^{2}
+    \end{aligned}\right.
+\end{equation}
+其中，$b_t$与$s_t$分别为对数价格误差的均值与标准差，可由最近$W$天的样本作描述统计；实际筛选直接采用已实现的历史误差路径，不假定其服从正态分布。采用对数形式的原因是价格恒为正，对数误差可在不引入非负约束的情况下保持价格的符号性质。
+
+在价格不确定的条件下，若仅以预测价格下的费用最小为目标，实际价格高于预测时可能出现费用超支。问题四场景一沿用问题二的主模型，场景二沿用问题三的情景后验筛选：我们先按当前预测价格路径生成备选决策，再用历史价格误差路径计算平均净增益：
+\begin{equation}\label{eq:src52}
+ \min F(\hat p)\quad\longrightarrow\quad
+ |\mathcal P|^{-1}\sum_{\varsigma\in\mathcal P}\hat G_{\varsigma}>5\ \text{元}.
+\end{equation}
+其中，$\mathcal P$由历史价格误差与同源净负荷误差共同构成，$\hat G$沿用问题三已计末端储电不足的净收益。无调整场景执行日前计划，时序回测给出实际费用和物理约束结果。
+
+
+问题四分别求解合同不可调整与允许指定时刻调整的两类场景。
+
+场景一（对应问题二）不含日内调整，取式\eqref{eq:src35}中的$\Delta_t^{+}=\Delta_t^{-}=0$，则生效购电量与计划购电量相等，费用函数退化为
+\begin{equation}\label{eq:src53}
+    \begin{aligned}
+    C_{1}={}&\sum_{t\in\mathcal{T}}p_{t}^{(d)}\,q_{t}+5\sum_{t\in\mathcal{T}}p_{t}^{(d)}\,h_{t}
+    \end{aligned}
+\end{equation}
+其中，$p_t^{(d)}$在计划阶段取预测价格$\hat{p}_t^{(d)}$、在结算阶段取真实价格$p_t^{(d)}$；价格不确定性由计划价与结算价的差异进入费用。
+
+场景二（对应问题三）保留日内调整，费用函数仍为式\eqref{eq:src38}的四项结构，只是其中的价格由固定的$p_t$替换为逐日的$p_t^{(d)}$：
+\begin{equation}\label{eq:src54}
+    \begin{aligned}
+    C_{2}={}&\sum_{t\in\mathcal{T}}p_{t}^{(d)}\,q_{t}
+    +1.5\sum_{t\in\mathcal{T}}p_{t}^{(d)}\,\Delta_{t}^{+}
+    -0.5\sum_{t\in\mathcal{T}}p_{t}^{(d)}\,\Delta_{t}^{-}
+    +5\sum_{t\in\mathcal{T}}p_{t}^{(d)}\,h_{t}
+    \end{aligned}
+\end{equation}
+三次调整决策的时刻与问题三一致，仍为6:00、12:00与18:00，问题四场景二沿用问题三式\eqref{eq:src40}至式\eqref{eq:src42}的净增益筛选；用于情景推演的价格由决策日前同发布时刻的历史对数价格误差路径构造：
+\begin{equation}\label{eq:src55}
+    \tilde{p}_{t}^{(d,\varsigma)}=\hat{p}_{t}^{(d)}\exp\left(\zeta_{t}^{(\varsigma)}\right),\qquad \zeta^{(\varsigma)}\in\mathcal{Z}_{p}^{(d)},\quad |\mathcal{Z}_{p}^{(d)}|\le14
+\end{equation}
+价格误差路径与对应净负荷误差路径按历史日期配对，情景数最多14条，至少保留7条才执行筛选。
+
+\subsubsection{约束条件}
+
+两类场景的约束条件与前三问一致，其中式\eqref{eq:src56}至式\eqref{eq:src58}分别对应功率平衡、储电量递推与储能运行边界：
+\begin{align}
+    a_{t}+h_{t}+V_{t}+d_{t}&=L_{t}+c_{t}+w_{t},\qquad \forall t\in\mathcal{T}\label{eq:src56}\\
+    E_{t+1}&=E_{t}+\eta_{c}\,c_{t}-\frac{d_{t}}{\eta_{d}},\qquad \forall t\in\mathcal{T}\label{eq:src57}\\
+    E_{\min}&\le E_{t}\le E_{\max},\qquad 0\le c_{t},d_{t}\le \bar{Q},\qquad \forall t\in\mathcal{T}
+\label{eq:src58}\end{align}
+储电量边界同时施加于窗口终态$E_H$，即$E_{\min}\le E_H\le E_{\max}$，窗口初态固定为决策时刻已实现的储电量。场景一固定$a_t=q_t$；场景二只允许在指定时刻修改未执行的合同，沿用问题三的净增益筛选。实际执行采用问题二逐时段规则。
+
+
+\textbf{我们建立以下价格误差情景驱动的购电储能优化模型：}
+\begin{equation}\label{eq:src60}
+    \begin{aligned}
+    \min\quad &F_j,\quad F_1=C_1-0.45E_H,\quad F_2=C_2-0.45E_H,\quad j\in\{1,2\},\\
+    \mathrm{s.t.}\quad &a_t+h_t+V_t+d_t=L_t+c_t+w_t,\quad t\in\mathcal T,\\
+    &E_{t+1}=E_t+\eta_c c_t-d_t/\eta_d,\quad E_{\min}\le E_t\le E_{\max},\\
+    &0\le c_t,d_t\le\bar Q,\quad h_t,w_t\ge0,\\
+    &a_t=q_t\ (j=1),\qquad a_t=q_t+\Delta_t^+-\Delta_t^-\ (j=2),\\
+    &\Delta_t^+,\Delta_t^-\ge0.
+    \end{aligned}
+\end{equation}
+主模型目标含末端储电价值$-0.45E_H$，电价系数取预测价格$\hat{p}_t^{(d)}$，参数见表\ref{tab:参数4}。
+
+\Needspace{0.40\textheight}
+\begin{longtable}{>{\centering\arraybackslash}p{0.1759\textwidth}>{\raggedright\arraybackslash}p{0.2932\textwidth}>{\centering\arraybackslash}p{0.1173\textwidth}>{\raggedright\arraybackslash}p{0.2736\textwidth}}
+  \caption{问题四算法参数设置}
+  \label{tab:参数4} \\
+  \toprule
+  参数名 & 参数含义 & 取值 & 选取依据 \\
+  \midrule
+  \endfirsthead
+  \caption{问题四算法参数设置（续）} \\
+  \toprule
+  参数名 & 参数含义 & 取值 & 选取依据 \\
+  \midrule
+  \endhead
+  \bottomrule
+  \endfoot
+  $\varepsilon_C$ & 净增益均值门槛（元） & 5.0 & 正式方案的接受条件 \\
+  $r$ & 旧对照最坏损失预算（元） & 5.0 & 正式方案不启用该约束 \\
+  $W$ & 价格误差样本窗口（日） & 28 & 与负载、光伏一致 \\
+  $|\mathcal{P}|$ & 价格情景数 & 7--14 & 不足7条保持当前合同 \\
+  $\alpha$ & 日前净负荷保护分位数 & 0.8/0.7 & 分别沿用对应问题配置 \\
+  $5$ & 紧急购电价格倍数 & 5.0 & 题目给定 \\
+  $10^{-4}$ & 价格下界（元/kWh） & $1\times10^{-4}$ & 避免目标退化 \\
+\end{longtable}
+
+
+
+我们对历史日期$k_\varsigma$同时提取净负荷误差$e_{s,t}^{(k_\varsigma)}$和对数价格误差$\zeta_{s,t}^{(k_\varsigma)}$，形成配对样本
+\begin{equation}\label{eq:joint_scenario}
+ \left(\widetilde N_{s,t}^{(d,\varsigma)},\widetilde p_{s,t}^{(d,\varsigma)}\right)
+ =\left(\hat N_{s,t}^{(d)}+e_{s,t}^{(k_\varsigma)},
+ \hat p_{s,t}^{(d)}\exp\zeta_{s,t}^{(k_\varsigma)}\right).
+\end{equation}
+同日期配对保留净负荷与价格偏差的共同变化，情景费用含紧急购电项与储能递推影响。
+
+场景一按日前合同执行，场景二增加情景净增益筛选。

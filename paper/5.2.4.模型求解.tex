@@ -1,0 +1,47 @@
+\subsection{求解结果}
+
+\renewcommand{\arraystretch}{1.25}
+\setlength{\LTpre}{6pt}
+\setlength{\LTpost}{6pt}
+
+我们采用Python调用SciPy/HiGHS线性规划求解器，基于上述模型利用附件2中365天的负载与光伏实测数据、附件1的电价曲线对全年购电计划进行求解，从2025年1月1日6000 kWh开始连续运行，结果统计区间为2月1日至12月31日，共334天，核心参数如表\ref{tab:参数2}所示。
+
+\Needspace{0.30\textheight}
+\begin{longtable}{>{\centering\arraybackslash}p{0.2244\textwidth}>{\centering\arraybackslash}p{0.2056\textwidth}>{\centering\arraybackslash}p{0.2244\textwidth}>{\centering\arraybackslash}p{0.2056\textwidth}}
+  \caption{问题二全年运行汇总结果（2025-02-01 至 2025-12-31，共334天）}
+  \label{tab:q2_sum} \\
+  \toprule
+  指标 & 数值 & 指标 & 数值 \\
+  \midrule
+  \endfirsthead
+  \caption{问题二全年运行汇总结果（续）} \\
+  \toprule
+  指标 & 数值 & 指标 & 数值 \\
+  \midrule
+  \endhead
+  \bottomrule
+  \endfoot
+  全年购电费（元） & 13790848.69 & 其中计划购电费（元） & 13322381.05 \\
+  紧急购电费（元） & 468467.64 & 紧急购电费占比（\%） & 3.40 \\
+  紧急购电量（kWh） & 75858.03 & 紧急购电日数（天） & 139 \\
+  计划购电量（kWh） & 21748105.01 & 生效购电量（kWh） & 21748105.01 \\
+  未消纳电量（kWh） & 2687529.82 & 计划执行偏差电量（kWh） & 0.00 \\
+  2月1日初始储电量（1月预热后，kWh） & 9309.34 & 年末储电量（kWh） & 2233.58 \\
+  LP求解失败次数 & 0 & 核查异常次数 & 0 \\
+\end{longtable}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.86\textwidth]{figures/q2_month.pdf}
+  \caption{月度购电费用构成与月度紧急购电量}
+  \label{fig:q2_month}
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.94\textwidth]{figures/q2_heat.pdf}
+  \caption{全年紧急购电量的月份—时刻分布热力图}
+  \label{fig:q2_heat}
+\end{figure}
+
+\input{tables/问题二指定日期.tex}

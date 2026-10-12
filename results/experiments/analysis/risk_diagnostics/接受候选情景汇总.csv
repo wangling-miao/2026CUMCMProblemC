@@ -1,0 +1,9 @@
+﻿case_id,reference,tag,price_environment,accepted_count,accepted_below_reference_budget_count,accepted_below_reference_budget_percent,minimum_accepted_scenario_gain_net_yuan,median_accepted_scenario_min_gain_net_yuan,median_accepted_scenario_mean_gain_net_yuan,reference_budget_yuan,configured_worst_gate
+full_fixed,full_fixed,F,固定电价,65,0,0,0.727256650487,721.603827185,2057.42738544,5,True
+A3_no_nu_fixed,full_fixed,A3_no_nu,固定电价,65,0,0,0.727256650483,721.603827185,2028.75868504,5,True
+A4_no_kappa_fixed,full_fixed,A4_no_kappa,固定电价,296,0,0,-4.13129576637,45.940025795,54.943637827,5,True
+A5_no_tail_fixed,full_fixed,A5_no_tail,固定电价,265,220,83.0188679245,-10658.8353223,-415.491971218,437.340240689,5,False
+full_variable,full_variable,F,波动电价,77,0,0,0.579757378484,446.512881401,1829.51959676,5,True
+A3_no_nu_variable,full_variable,A3_no_nu,波动电价,76,0,0,0.579757378484,440.518823278,1962.98609291,5,True
+A4_no_kappa_variable,full_variable,A4_no_kappa,波动电价,261,0,0,-3.66813889826,42.5970095484,55.4952325705,5,True
+A5_no_tail_variable,full_variable,A5_no_tail,波动电价,300,242,80.6666666667,-10840.0162449,-370.357299724,394.291307232,5,False

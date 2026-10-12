@@ -1,0 +1,128 @@
+\subsubsection{问题三模型}
+
+设第$d$天的四个预报发布时刻为0:00、6:00、12:00与18:00，其对应的时段编号依次为0、36、72与108。在第$s$次发布的时刻，调度中心可获取的信息集为
+\begin{equation}\label{eq:src34}
+    \mathcal{F}_{s}^{(d)}=\left\{\left(L_{t}^{(d)}\right)_{t<t_{s}},\ \left(V_{t}^{(d)}\right)_{t<t_{s}},\ \left(Y_{t}^{(s')}\right)_{s'\le s},\ \left(L_{t}^{(k)},V_{t}^{(k)}\right)_{k<d},\ p_{t}\right\}
+\end{equation}
+
+记第$d$天的计划购电量为$q_t$，生效购电量为$a_t$。为刻画调整行为，我们引入分解式
+\begin{equation}\label{eq:src35}
+    a_{t}=q_{t}+\Delta_{t}^{+}-\Delta_{t}^{-},\qquad \Delta_{t}^{+},\Delta_{t}^{-}\ge 0
+\end{equation}
+我们定义$\Delta_t^+=[a_t-q_t]^+$、$\Delta_t^-=[q_t-a_t]^+$，二者不同时为正。原计划在0时固定；后续调整不得修改已经执行的合同前缀：
+\begin{equation}\label{eq:src36}
+    a_t^{\mathrm{new}}=a_t^{\mathrm{old}},\qquad t<t_s
+\end{equation}
+为刻画合同的柔性程度，我们引入混合系数$\lambda\in\{0,0.5,1\}$，调整后的合同电量由当前生效合同与再优化解按比例混合而成：
+\begin{equation}\label{eq:src37}
+    a_{t}^{\lambda}=a_t^{\mathrm{old}}+\lambda\left(a_{t}^{\star}-a_t^{\mathrm{old}}\right),\qquad t\ge t_{s}
+\end{equation}
+其中，$a_t^{\star}$为在当前信息集下重新求解得到的理想购电量（kWh）。
+
+第四条备选方案使用前节的分位数边界：若$q_t<B_t^{\mathrm{lo}}$，限制$a_t\ge q_t$；若$q_t>B_t^{\mathrm{hi}}$，限制$B_t^{\mathrm{hi}}\le a_t\le q_t$；其余样本充分的时段固定$a_t=q_t$。边界截为非负电量，样本不足时固定当前生效合同。在上述区间约束及储能约束下求解LP，得到分位数约束曲线。
+
+
+
+题目给出的调整计价规则是分段的：上调部分按交易时刻电价的1.5倍采购；取消部分不再供电，但仍承担其原价50\%的违约成本，紧急购电则按5倍电价结算。据此，我们将单日总购电费用写为
+\begin{equation}\label{eq:src38}
+    \begin{aligned}
+    C={}&\underbrace{\sum_{t\in\mathcal{T}}p_{t}\,q_{t}}_{\text{计划购电费}}
+    +\underbrace{1.5\sum_{t\in\mathcal{T}}p_{t}\,\Delta_{t}^{+}}_{\text{新增采购费}}
+    -\underbrace{0.5\sum_{t\in\mathcal{T}}p_{t}\,\Delta_{t}^{-}}_{\text{取消返还}}
+    +\underbrace{5\sum_{t\in\mathcal{T}}p_{t}\,h_{t}}_{\text{紧急购电费}}
+    \end{aligned}
+\end{equation}
+式\eqref{eq:src38}关于决策变量为线性函数。
+
+\subsubsection{目标函数}
+
+第$s$次决策时，未来时段的实际净负荷尚未揭示。主线性规划针对当前冻结的预测路径生成调整方案；历史误差路径构成的情景集用于方案筛选与风险检验，不改变主线性规划的目标函数：
+\begin{equation}\label{eq:src39}
+    \begin{aligned}
+    \min\ F(a)={}&\sum_{i\in\mathcal H}\hat p_i a_i
+    +0.5\sum_{i\in\mathcal D}\hat p_i z_i
+    +5\sum_{i\in\mathcal H}\hat p_i h_i-0.45E_H,\\
+    &z_i\ge |a_i-q_i|.
+    \end{aligned}
+\end{equation}
+其中，$\mathcal H$为最长24小时窗口，$\mathcal D$为当前自然日尚未执行的合同格；次日尚未签约格只计正常采购费。末端价值不进入真实账单。我们先最小化完整$F$，再在$F\le F^*+10^{-6}$下最小化充放电总量；第四种备选方案不启用第二级。情景集$\mathcal{P}$由决策日之前若干完整日中同一发布时刻、同一时段区间的净负荷预报偏差序列构造，用于计算备选方案的情景费用并执行式\eqref{eq:src40}至式\eqref{eq:src42}的净增益筛选；情景费用平均值不进入主LP目标。
+
+
+有限评价窗口可能使部分合同以消耗更多末端储电换取当前费用下降，因此对相对保持方案的末端储电短缺按机会成本扣价，构造净增益指标：
+\begin{equation}\label{eq:src40}
+    \left\{\begin{aligned}
+    \hat{G}_{\varsigma}&=G_{\varsigma}-\kappa\,D_{\varsigma},\\[1mm]
+    G_{\varsigma}&=C_{\varsigma}^{\text{keep}}-C_{\varsigma}^{\lambda},\\[1mm]
+    D_{\varsigma}&=\left[E_{H}^{\text{keep}}-E_{H}^{\lambda}\right]^{+}
+    \end{aligned}\right.
+\end{equation}
+$\kappa$的取值由紧急购电的机会成本决定：
+\begin{equation}\label{eq:src41}
+    \kappa=5\,\eta_{d}\,p_{\max}=5\times0.9\times1.3952=6.2784\ \text{元/kWh}
+\end{equation}
+其中，$p_{\max}=1.3952$元/kWh为附件1电价的最大值。这一取值按末端储电可替代的高价紧急采购作保守估值，其单位为元/电池内部kWh，仅用于备选方案的跨日储电价值比较。
+
+基于净增益指标，调整的接受条件为
+\begin{equation}\label{eq:src42}
+    \dfrac{1}{\left|\mathcal{P}\right|}\sum_{\varsigma\in\mathcal{P}}\hat{G}_{\varsigma}>\varepsilon_{C},\qquad \varepsilon_{C}=5\ \text{元}.
+\end{equation}
+我们从满足式\eqref{eq:src42}的调整方案中取平均净增益最大的方案；若没有方案通过，则保持当前合同。各路径按问题二的实时规则运行至次日06:00，最多使用14条完整历史路径，不足7条时保持当前合同。
+
+\subsubsection{约束条件}
+
+第$s$次决策的备选合同须满足如下约束，其中功率平衡、储电量递推和储能边界分别对应式\eqref{eq:src43}至式\eqref{eq:src45}：
+\begin{align}
+    a_{t}+h_{t}+V_{t}+d_{t}&=L_{t}+c_{t}+w_{t},\qquad \forall t\in\mathcal{T}\label{eq:src43}\\
+    E_{t+1}&=E_{t}+\eta_{c}\,c_{t}-\frac{d_{t}}{\eta_{d}},\qquad \forall t\in\mathcal{T}\label{eq:src44}\\
+    E_{\min}&\le E_{t}\le E_{\max},\qquad 0\le c_{t},d_{t}\le \bar{Q},\qquad \forall t\in\mathcal{T}
+\label{eq:src45}\end{align}
+储电量边界同时施加于窗口终态$E_H$，即$E_{\min}\le E_H\le E_{\max}$，窗口初态固定为决策时刻已实现的储电量。规划使用当前预测，实际执行使用已实现的负载与光伏。
+
+
+\textbf{我们建立以下基于线性规划与情景净增益的滚动优化模型：}
+\begin{equation}\label{eq:src46}
+    \begin{aligned}
+    \min\quad &F(a)=\sum_{i\in\mathcal H}\hat p_i a_i+0.5\sum_{i\in\mathcal D}\hat p_i z_i+5\sum_{i\in\mathcal H}\hat p_i h_i-0.45E_H\\
+    \mathrm{s.t.}\quad &a_t+h_t+V_t+d_t=L_t+c_t+w_t,\quad t\in\mathcal T,\\
+    &E_{t+1}=E_t+\eta_c c_t-d_t/\eta_d,\quad E_{\min}\le E_t\le E_{\max},\\
+    &a_t=q_t+\Delta_t^+-\Delta_t^-,\quad z_i\ge|a_i-q_i|,\\
+    &\Delta_t^+,\Delta_t^-,c_t,d_t,h_t,w_t\ge0,\quad c_t,d_t\le\bar Q.
+    \end{aligned}
+\end{equation}
+目标系数按完整$F$设置，情景筛选在模型求解后执行。算法参数如表\ref{tab:参数3}所示。
+
+\Needspace{0.40\textheight}
+\begin{longtable}{>{\centering\arraybackslash}p{0.1759\textwidth}>{\raggedright\arraybackslash}p{0.2932\textwidth}>{\centering\arraybackslash}p{0.1173\textwidth}>{\raggedright\arraybackslash}p{0.2736\textwidth}}
+  \caption{问题三算法参数设置}
+  \label{tab:参数3} \\
+  \toprule
+  参数名 & 参数含义 & 取值 & 选取依据 \\
+  \midrule
+  \endfirsthead
+  \caption{问题三算法参数设置（续）} \\
+  \toprule
+  参数名 & 参数含义 & 取值 & 选取依据 \\
+  \midrule
+  \endhead
+  \bottomrule
+  \endfoot
+  $\alpha$ & 日前保护分位数 & 0.8/0.7 & 0--6时/其余时段；取5日误差 \\
+  $\lambda$ & 合同混合系数备选集合 & \{0, 0.5, 1\} & 半幅与完整两档调整 \\
+  $\kappa$ & 终端储电量短缺惩罚系数（元/kWh） & 6.2784 & $5\eta_dp_{\max}$，式\eqref{eq:src41} \\
+  $\varepsilon_C$ & 净增益均值门槛（元） & 5.0 & 排除预计微小收益 \\
+  $r$ & 旧对照最坏情形预算（元） & 5.0 & 正式方案不启用该约束 \\
+  $|\mathcal{P}|$ & 情景数（误差路径条数） & 7--14 & 不足7条保持当前合同 \\
+  $\omega_t$ & 融合预报权重 & 随误差更新 & 冷启动0.6；特定夜间0.5 \\
+  $5$ & 紧急购电价格倍数 & 5.0 & 题目给定 \\
+\end{longtable}
+
+
+
+记净负荷预测误差为$e_{s,t}^{(k)}=N_t^{(k)}-\hat N_{s,t}^{(k)}$，取决策日前已完成的同发布时刻路径，构造
+\begin{equation}\label{eq:net_scenario}
+ \widetilde N_{s,t}^{(d,\varsigma)}=\hat N_{s,t}^{(d)}+e_{s,t}^{(k_\varsigma)},
+ \qquad k_\varsigma<d.
+\end{equation}
+每条路径保留连续时段误差，并对保持合同与调整方案采用相同初始状态和执行规则。
+
+算法在每个调整时刻冻结信息、生成备选方案并进行历史路径筛选，选择平均净增益最大的合同后进入下一次滚动调整。

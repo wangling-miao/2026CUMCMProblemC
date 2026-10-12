@@ -1,0 +1,74 @@
+\subsection{建模：典型日确定性购电计划线性规划}
+
+下面我们给出问题一的决策变量、目标函数和约束。
+
+我们将一天按10分钟等分为144个时段，记时段集合为$\mathcal{T}=\{0,1,\dots,143\}$。对任意时段$t\in\mathcal{T}$，定义如下决策变量：
+\begin{equation}\label{eq:src4}
+    a_{t},\ c_{t},\ d_{t},\ w_{t}\ \ge 0,\qquad t\in\mathcal{T}
+\end{equation}
+储电量$E_t$作为状态变量由递推关系确定。所有决策变量均以时段能量为单位，与式\eqref{eq:src1}的折算口径一致。
+
+\subsubsection{目标函数}
+
+我们以全天购电费用最低为优化目标。由于典型日的电价已知且固定，购电费用等于各时段购电量与对应电价的乘积之和：
+\textbf{我们建立以下典型日确定性购电模型：}
+\begin{equation}\label{eq:src5}
+    \min\ F=\sum_{t\in\mathcal{T}} p_{t}\,a_{t}
+\end{equation}
+目标函数关于决策变量是线性的，不含常数项，故可写为$F=\bm{p}^{\mathrm{T}}\bm{a}$。
+
+\subsubsection{约束条件}
+
+微网在任意时段均须保证供给不低于小区负载，即外网购电、光伏出力与储能放电三者之和不得小于负载用电与储能充电之和，未被消纳的差额以弃电形式记录：
+\begin{equation}\label{eq:src6}
+    a_{t}+V_{t}+d_{t}=L_{t}+c_{t}+w_{t},\qquad \forall t\in\mathcal{T}
+\end{equation}
+式\eqref{eq:src6}描述时段能量守恒。当$V_t>L_t$时，富余电量可用于充电，剩余部分计入$w_t$；充放时序由目标函数与储能约束共同确定。
+
+储能设备的储电量随充放电变化，考虑充放电效率后，其递推关系为：
+\begin{equation}\label{eq:src7}
+    E_{t+1}=E_{t}+\eta_{c}\,c_{t}-\frac{d_{t}}{\eta_{d}},\qquad \forall t\in\mathcal{T}
+\end{equation}
+为避免储能设备过充或过放，储电量须始终维持在允许区间内：
+\begin{equation}\label{eq:src8}
+    E_{\min}\le E_{t}\le E_{\max},\qquad t=0,\ldots,144
+\end{equation}
+同时，储能设备的充放电功率受变流器容量限制：
+\begin{equation}\label{eq:src9}
+    0\le c_{t}\le \bar{Q},\qquad 0\le d_{t}\le \bar{Q},\qquad \bar{Q}=P_{\max}\Delta t
+\end{equation}
+单时段充放电量上限由变流器功率与时段长度共同确定。
+
+题目要求储电量在0:00与24:00相同，结合已知的初始储电量$E_0=6000$ kWh，该条件可写为：
+\begin{equation}\label{eq:src10}
+    E_{0}=E_{144}=6000
+\end{equation}
+首末储电量相等，日内储能净变化为零，计划不会靠消耗期末库存降低费用。
+
+我们将上述目标函数、功率平衡、储电递推、容量边界、功率上限和首末状态条件统一求解，并通过SciPy接口调用HiGHS完成优化\cite{highs2018}。问题一在最优购电费不增加超过$10^{-6}$元的条件下，再最小化充放电总量。算法参数如表\ref{tab:参数1}所示。
+
+\begin{longtable}{>{\centering\arraybackslash}p{0.1564\textwidth}>{\raggedright\arraybackslash}p{0.2932\textwidth}>{\centering\arraybackslash}p{0.1173\textwidth}>{\raggedright\arraybackslash}p{0.2932\textwidth}}
+  \caption{算法参数设置}
+  \label{tab:参数1} \\
+  \toprule
+  参数名 & 参数含义 & 取值 & 选取依据 \\
+  \midrule
+  \endfirsthead
+  \caption{算法参数设置（续）} \\
+  \toprule
+  参数名 & 参数含义 & 取值 & 选取依据 \\
+  \midrule
+  \endhead
+  \bottomrule
+  \endfoot
+  $T$ & 一天划分的时段数 & 144 & 附件1采样间隔10分钟 \\
+  $\Delta t$ & 单个时段时长（h） & $1/6$ & 10分钟折算 \\
+  $E_0$ & 储能初始储电量（kWh） & 6000 & 附录1给定 \\
+  $E_{\min}$ & 储电量下限（kWh） & 1200 & 附录1防止过放 \\
+  $E_{\max}$ & 储电量上限（kWh） & 10800 & 附录1防止过充 \\
+  $P_{\max}$ & 最大充放电功率（kW） & 5000 & 附录1设备参数 \\
+  $\eta_c,\eta_d$ & 充、放电效率 & 0.9 & 附录1给定 \\
+  $\varepsilon$ & 约束容差（kWh） & $2\times10^{-3}$ & 浮点求解精度 \\
+\end{longtable}
+
+

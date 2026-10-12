@@ -1,0 +1,13 @@
+{
+  "evaluation": "2025-02-01 through 2025-12-31; all 334 matched calendar dates",
+  "paired_difference": "ablation minus full reference on the same realized calendar date",
+  "boundary_adjustment": "cash - 0.45 * (end SOC - start SOC); common evaluation value, not the tested nu",
+  "daily_p95": "numpy.quantile(array, 0.95, method='linear') on all 334 days",
+  "positive_only_p95": "the same linear quantile restricted to paired differences > 1e-5 yuan; absent when no adverse days",
+  "top_5percent_mean": "arithmetic mean of largest ceil(0.05*n) observations; 17 observations for n=334",
+  "equal_day_tolerance_yuan": 1e-05,
+  "expected_scenario_risk": "chosen candidate min(G_net) over the causal historical scenarios at that decision; projected, not realized",
+  "realized_risk": "descriptive daily cash/emergency tails and realized paired adverse dates in this 2025 replay",
+  "comparability": "per-policy decision states and candidate curves can differ; historical scenario min gains are not identical-state matched contrasts",
+  "scope": "retrospective fixed-configuration diagnostics on previously used 2025 data; no independent or future-year guarantee; no automatic retuning"
+}

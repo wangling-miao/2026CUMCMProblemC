@@ -1,0 +1,40 @@
+\section{符号说明}
+各变量采用10分钟时段能量口径，功率乘以$\Delta t$后进入优化模型。$E_t$表示第$t$时段开始时的储电量，$E_{t+1}$表示该时段结束时的储电量；上标$(d)$标识日期，下标$t$标识日内时段，预测量加帽号表示。
+\begingroup\small
+\begin{longtable}{>{\centering\arraybackslash}p{0.23\textwidth}p{0.52\textwidth}>{\centering\arraybackslash}p{0.15\textwidth}}
+\caption{主要符号及量纲}\label{tab:符号说明}\\
+\toprule 符号 & 含义 & 单位或取值\\\midrule\endfirsthead
+\caption{主要符号及量纲（续）}\\\toprule 符号 & 含义 & 单位或取值\\\midrule\endhead
+\bottomrule\endfoot
+$d,t,T$ & 日期索引、日内时段索引及每日时段数$T=144$ & $t=0,\ldots,143$\\
+$\Delta t$ & 单个时段时长 & $1/6$ h\\
+$s,t_s,\mathcal F_s^{(d)}$ & 预报发布序号、对应起始时段及决策信息集 & $s=0,1,2,3$\\
+$L_t,V_t,N_t$ & 负载、光伏及净负荷电量，$N_t=L_t-V_t$ & kWh\\
+$\hat L_t,\hat V_t,\hat N_t$ & 负载、光伏及净负荷预测电量 & kWh\\
+$Y_{s,t},\omega_t,b^O_{s,h}$ & 细化官方预报、融合权重及官方预报偏差 & kWh、无量纲、kWh\\
+$p_t,\hat p_t$ & 实现电价与决策时预测电价 & 元/kWh\\
+$q_t,a_t,h_t$ & 原计划、生效合同及紧急购电量 & kWh\\
+$\Delta_t^+,\Delta_t^-$ & 生效合同相对原计划的上调与下调电量 & kWh\\
+$c_t,d_t,w_t$ & 充电、放电及未消纳供电量 & kWh\\
+$E_t,E_0,E_H$ & 时段初始、窗口初始及窗口末端储电量 & kWh\\
+$E_{\min},E_{\max}$ & 储电量运行下限与上限 & 1200、10800 kWh\\
+$P_{\max},\bar Q$ & 充放电功率上限及单时段电量上限 & 5000 kW、$5000/6$ kWh\\
+$\eta_c,\eta_d$ & 充电效率与放电效率 & 均为0.9\\
+$\alpha,Q_\alpha,\mathcal R_{d,h}$ & 保护分位水平、经验分位数及历史误差集 & 无量纲、kWh、集合\\
+$B_t^{\mathrm{lo}},B_t^{\mathrm{hi}}$ & 净负荷0.70与0.90分位数边界 & kWh\\
+$\lambda,\mathcal L$ & 合同混合系数及候选方案集合 & $\{0,0.5,1\}$、集合\\
+$\varsigma,\mathcal P$ & 历史误差情景索引及情景集合 & $|\mathcal P|\le14$\\
+$G_\varsigma,\hat G_\varsigma$ & 原始费用节省及末端储电修正后的净增益 & 元\\
+$D_\varsigma,\kappa$ & 末端储电短缺及其评价系数 & kWh、元/kWh\\
+$\varepsilon_C,r$ & 均值净增益门槛；$r$仅用于含最坏损失限制的实验对照 & 均为5元\\
+$\nu,W$ & 优化目标末端储电价值系数与历史误差档案长度 & 0.45元/kWh、28日\\
+$W_{\mathrm{obs}}$ & 问题二及四-2的同小时保护观测数 & 28个观测\\
+$\beta$ & 日内预测偏差衰减系数 & 0.90\\
+$\zeta_t,\rho$ & 对数价格预测误差与压力测试放大系数 & 无量纲\\
+$P_t,Q_t$ & 原始功率记录与折算后的时段电量 & kW、kWh\\
+$Y^{(h)},u_t,z_{s,t}$ & 逐小时预报节点、相对发布时刻与预报偏差 & kW、h、kWh\\
+$\mathrm{MAE},\mathrm{RMSE},\mathrm{WAPE}$ & 预测误差评价指标 & kW、kW、\%\\
+$\bm{x},\bm{c},A_{\mathrm{eq}},A_{\mathrm{ub}}$ & 线性规划变量、目标系数及等式/不等式约束矩阵 & 按模型维度\\
+$C,F$ & 实际结算费用与含末端价值的优化目标 & 元\\
+\end{longtable}\endgroup
+局部使用的$h$为小时编号，紧急购电量始终写为$h_t$；日期索引$d$与放电变量$d_t$通过上下标区分。问题一以$F$表示典型日实际费用，年度模型以$C$表示账单、以$F$表示优化评价值。

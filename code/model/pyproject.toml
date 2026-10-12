@@ -1,0 +1,16 @@
+[project]
+name = "cumcm-v11"
+version = "0.11.0"
+description = "Rolling-horizon microgrid electricity procurement and storage optimization"
+requires-python = ">=3.12"
+dependencies = ["numpy>=1.26.4", "scipy>=1.17.1", "pandas>=2.3.3", "openpyxl>=3.1.2"]
+
+[project.scripts]
+cumcm-v11 = "cumcm_v11:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]

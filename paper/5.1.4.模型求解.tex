@@ -1,0 +1,77 @@
+\subsection{求解}
+
+\renewcommand{\arraystretch}{1.25}
+\setlength{\LTpre}{6pt}
+\setlength{\LTpost}{6pt}
+
+基于上述模型，我们利用附件1中的电价、小区负载与光伏发电预测数据对典型日购电计划进行求解。模型采用Python及SciPy/HiGHS线性规划求解器，核心参数如表\ref{tab:参数1}所示。
+
+\begin{longtable}{>{\centering\arraybackslash}p{0.1400\textwidth}>{\centering\arraybackslash}p{0.1200\textwidth}>{\centering\arraybackslash}p{0.1400\textwidth}>{\centering\arraybackslash}p{0.1200\textwidth}>{\centering\arraybackslash}p{0.1400\textwidth}>{\centering\arraybackslash}p{0.1200\textwidth}}
+  \caption{微网在指定时间段的购电量（kWh）}
+  \label{tab:q1_buy} \\
+  \toprule
+  时间段 & 购电量 & 时间段 & 购电量 & 时间段 & 购电量 \\
+  \midrule
+  \endfirsthead
+  \caption{微网在指定时间段的购电量（续）} \\
+  \toprule
+  时间段 & 购电量 & 时间段 & 购电量 & 时间段 & 购电量 \\
+  \midrule
+  \endhead
+  \bottomrule
+  \endfoot
+  10:00-10:10 & 0.00 & 12:00-12:10 & 480.41 & 14:00-14:10 & 0.00 \\
+  16:00-16:10 & 445.43 & 18:00-18:10 & 531.89 & 20:00-20:10 & 0.00 \\
+\end{longtable}
+
+\begin{longtable}{>{\centering\arraybackslash}p{0.1400\textwidth}>{\centering\arraybackslash}p{0.1200\textwidth}>{\centering\arraybackslash}p{0.1400\textwidth}>{\centering\arraybackslash}p{0.1200\textwidth}>{\centering\arraybackslash}p{0.1400\textwidth}>{\centering\arraybackslash}p{0.1200\textwidth}}
+  \caption{储能设备在指定时间段的充放电量及储电量（单位：kWh）}
+  \label{tab:q1_bess} \\
+  \toprule
+  时间段 & 充电量 & 放电量 & 时间段 & 充电量 & 放电量 \\
+  \midrule
+  \endfirsthead
+  \caption{储能设备在指定时间段的充放电量及储电量（续）} \\
+  \toprule
+  时间段 & 充电量 & 放电量 & 时间段 & 充电量 & 放电量 \\
+  \midrule
+  \endhead
+  \bottomrule
+  \endfoot
+  0:00-4:00 & 4500.00 & 0.00 & 4:00-8:00 & 833.33 & 6365.84 \\
+  8:00-12:00 & 4787.96 & 1703.00 & 12:00-16:00 & 5286.04 & 91.10 \\
+  16:00-20:00 & 0.00 & 5780.13 & 20:00-24:00 & 5333.33 & 2859.87 \\
+  0:00储电量 & 6000.00 & --- & 24:00储电量 & 6000.00 & --- \\
+  全天合计 & 20740.67 & 16799.94 & --- & --- & --- \\
+\end{longtable}
+
+\begin{longtable}{>{\centering\arraybackslash}p{0.2150\textwidth}>{\centering\arraybackslash}p{0.2150\textwidth}>{\centering\arraybackslash}p{0.2150\textwidth}>{\centering\arraybackslash}p{0.2150\textwidth}}
+  \caption{典型日购电计划汇总结果}
+  \label{tab:q1_sum} \\
+  \toprule
+  指标 & 数值 & 指标 & 数值 \\
+  \midrule
+  \endfirsthead
+  \caption{典型日购电计划汇总结果（续）} \\
+  \toprule
+  指标 & 数值 & 指标 & 数值 \\
+  \midrule
+  \endhead
+  \bottomrule
+  \endfoot
+  全天购电量（kWh） & 59482.70 & 全天购电费（元） & 35126.95 \\
+  无储能基准购电费（元） & 48052.05 & 节省率（\%） & 26.90 \\
+  0--8时及20--24时购电量（kWh） & 43492.20 & 8--20时购电量（kWh） & 15990.50 \\
+  充电量（kWh） & 20740.67 & 放电量（kWh） & 16799.94 \\
+  储电量最小值（kWh） & 1200.00 & 储电量最大值（kWh） & 10800.00 \\
+  正净负荷电量（kWh） & 61789.94 & 约束残差 & $4.55\times10^{-13}$ \\
+\end{longtable}
+
+由表\ref{tab:q1_sum}可知，我们在储能设备参与下得到全天购电量\textbf{59482.70 kWh}，购电费为\textbf{35126.95元}；若不配置储能而直接按净负荷购电，全天购电费为\textbf{48052.05元}，储能设备通过削峰填谷使购电费用下降\textbf{26.90\%}，节省费用\textbf{12925.10元}。从购电量的时段分布看，0:00--8:00与20:00--24:00合计购电量占全天购电量的\textbf{73.12\%}，而8:00--20:00占\textbf{26.88\%}。
+
+% 典型日调度曲线统一由下方的十分钟数据图展示。
+
+
+
+
+
